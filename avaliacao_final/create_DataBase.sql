@@ -1,4 +1,8 @@
--- Tipos ENUM
+-- Criar a base de dados
+CREATE DATABASE loja_virtual;
+USE loja_virtual;
+
+-- Empresa
 CREATE TABLE company (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
@@ -13,6 +17,7 @@ CREATE TABLE company (
   address_cep VARCHAR(16)
 );
 
+-- Cliente
 CREATE TABLE customer (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   full_name VARCHAR(255) NOT NULL,
@@ -28,6 +33,7 @@ CREATE TABLE customer (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Cartão de fidelidade (1:1 com customer)
 CREATE TABLE loyalty_card (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   customer_id BIGINT UNIQUE NOT NULL,
@@ -38,6 +44,7 @@ CREATE TABLE loyalty_card (
   FOREIGN KEY (customer_id) REFERENCES customer(id) ON DELETE CASCADE
 );
 
+-- Fornecedor
 CREATE TABLE supplier (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
@@ -52,6 +59,7 @@ CREATE TABLE supplier (
   address_cep VARCHAR(16)
 );
 
+-- Categoria (com hierarquia)
 CREATE TABLE category (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
@@ -60,6 +68,7 @@ CREATE TABLE category (
   FOREIGN KEY (parent_category_id) REFERENCES category(id) ON DELETE SET NULL
 );
 
+-- Depósito
 CREATE TABLE warehouse (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
@@ -71,6 +80,7 @@ CREATE TABLE warehouse (
   address_cep VARCHAR(16)
 );
 
+-- Produto
 CREATE TABLE product (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   company_id BIGINT NOT NULL,
@@ -87,6 +97,7 @@ CREATE TABLE product (
   FOREIGN KEY (company_id) REFERENCES company(id) ON DELETE CASCADE
 );
 
+-- Imagem de produto (atributo multivalorado)
 CREATE TABLE product_image (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   product_id BIGINT NOT NULL,
@@ -95,6 +106,7 @@ CREATE TABLE product_image (
   FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
 );
 
+-- Relação N:N produto-categoria
 CREATE TABLE product_category (
   product_id BIGINT NOT NULL,
   category_id BIGINT NOT NULL,
@@ -103,6 +115,7 @@ CREATE TABLE product_category (
   FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE CASCADE
 );
 
+-- Relação N:N produto-fornecedor
 CREATE TABLE product_supplier (
   product_id BIGINT NOT NULL,
   supplier_id BIGINT NOT NULL,
@@ -113,6 +126,7 @@ CREATE TABLE product_supplier (
   FOREIGN KEY (supplier_id) REFERENCES supplier(id) ON DELETE CASCADE
 );
 
+-- Estoque (Inventory)
 CREATE TABLE inventory (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   product_id BIGINT NOT NULL,
@@ -124,6 +138,7 @@ CREATE TABLE inventory (
   FOREIGN KEY (warehouse_id) REFERENCES warehouse(id) ON DELETE CASCADE
 );
 
+-- Pedido
 CREATE TABLE `order` (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   customer_id BIGINT NOT NULL,
@@ -133,9 +148,37 @@ CREATE TABLE `order` (
   FOREIGN KEY (customer_id) REFERENCES customer(id) ON DELETE RESTRICT
 );
 
+-- Item do pedido
 CREATE TABLE order_item (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   order_id BIGINT NOT NULL,
   product_id BIGINT NOT NULL,
   quantity INT NOT NULL,
-  unit_price DECIMAL(12,2) NOT
+  unit_price DECIMAL(12,2) NOT NULL,
+  discount_percent DECIMAL(5,2) DEFAULT 0,
+  FOREIGN KEY (order_id) REFERENCES `order`(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE RESTRICT
+);
+
+-- Pagamento (1:1 com pedido)
+CREATE TABLE payment (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  order_id BIGINT UNIQUE NOT NULL,
+  method VARCHAR(64) NOT NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  status ENUM('pending','paid','failed','refunded') DEFAULT 'pending',
+  paid_at DATETIME,
+  FOREIGN KEY (order_id) REFERENCES `order`(id) ON DELETE CASCADE
+);
+
+-- Remessa (Shipment)
+CREATE TABLE shipment (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  order_id BIGINT NOT NULL,
+  carrier VARCHAR(128) NOT NULL,
+  tracking_code VARCHAR(64) NOT NULL,
+  shipped_at DATETIME,
+  delivered_at DATETIME,
+  status ENUM('ready','in_transit','delivered','returned') DEFAULT 'ready',
+  FOREIGN KEY (order_id) REFERENCES `order`(id) ON DELETE CASCADE
+);
