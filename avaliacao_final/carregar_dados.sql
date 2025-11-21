@@ -3,7 +3,7 @@ DELIMITER $$
 CREATE PROCEDURE carga_company()
 BEGIN
   DECLARE i INT DEFAULT 1;
-  WHILE i <= 500 DO
+  WHILE i <= 5 DO
     INSERT INTO company (name, cnpj, email, phone, address_city, address_state)
     VALUES (
       CONCAT('Empresa ', i),
