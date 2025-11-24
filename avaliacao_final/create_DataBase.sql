@@ -36,7 +36,7 @@ CREATE TABLE customer (
 -- Cartão de fidelidade (1:1 com customer)
 CREATE TABLE loyalty_card (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  customer_id BIGINT UNIQUE NOT NULL,
+  customer_id INT UNIQUE NOT NULL,
   code VARCHAR(64) UNIQUE NOT NULL,
   points INT DEFAULT 0,
   tier ENUM('bronze','silver','gold','platinum') DEFAULT 'bronze',
@@ -64,7 +64,7 @@ CREATE TABLE category (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   description TEXT,
-  parent_category_id BIGINT,
+  parent_category_id INT,
   FOREIGN KEY (parent_category_id) REFERENCES category(id) ON DELETE SET NULL
 );
 
@@ -83,7 +83,7 @@ CREATE TABLE warehouse (
 -- Produto
 CREATE TABLE product (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  company_id BIGINT NOT NULL,
+  company_id INT NOT NULL,
   sku VARCHAR(64) UNIQUE NOT NULL,
   name VARCHAR(255) NOT NULL,
   description TEXT,
@@ -100,7 +100,7 @@ CREATE TABLE product (
 -- Imagem de produto (atributo multivalorado)
 CREATE TABLE product_image (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  product_id BIGINT NOT NULL,
+  product_id INT NOT NULL,
   url TEXT NOT NULL,
   alt_text VARCHAR(255),
   FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
@@ -141,7 +141,7 @@ CREATE TABLE inventory (
 -- Pedido
 CREATE TABLE `order` (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  customer_id BIGINT NOT NULL,
+  customer_id INT NOT NULL,
   order_number VARCHAR(64) UNIQUE NOT NULL,
   order_date DATE NOT NULL,
   status ENUM('created','confirmed','shipped','delivered','canceled') DEFAULT 'created',
@@ -151,8 +151,8 @@ CREATE TABLE `order` (
 -- Item do pedido
 CREATE TABLE order_item (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  order_id BIGINT NOT NULL,
-  product_id BIGINT NOT NULL,
+  order_id INT NOT NULL,
+  product_id INT NOT NULL,
   quantity INT NOT NULL,
   unit_price DECIMAL(12,2) NOT NULL,
   discount_percent DECIMAL(5,2) DEFAULT 0,
@@ -163,7 +163,7 @@ CREATE TABLE order_item (
 -- Pagamento (1:1 com pedido)
 CREATE TABLE payment (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  order_id BIGINT UNIQUE NOT NULL,
+  order_id INT UNIQUE NOT NULL,
   method VARCHAR(64) NOT NULL,
   amount DECIMAL(12,2) NOT NULL,
   status ENUM('pending','paid','failed','refunded') DEFAULT 'pending',
@@ -174,7 +174,7 @@ CREATE TABLE payment (
 -- Remessa (Shipment)
 CREATE TABLE shipment (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  order_id BIGINT NOT NULL,
+  order_id INT NOT NULL,
   carrier VARCHAR(128) NOT NULL,
   tracking_code VARCHAR(64) NOT NULL,
   shipped_at DATETIME,
